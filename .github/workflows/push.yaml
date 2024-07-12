@@ -18,46 +18,53 @@ jobs:
           deno-version: "1.44.4"
 
       - name: List unpushed image tags
+        id: tags-list
         run: deno run --allow-env --allow-write --allow-net main.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # push:
-  #   name: Push Docker image to GHCR
-  #   runs-on: ubuntu-latest
+      - run: |
+          echo ${{ steps.tags-list.outputs.matrix }}
 
-  #   needs:
-  #     - tag-list
+    outputs:
+      matrix: ${{ steps.tags-list.outputs.matrix }}
 
-  #   permissions:
-  #     packages: write
-  #     contents: read
-  #     attestations: write
-  #     id-token: write
+  push:
+    name: Push Docker image to GHCR
+    runs-on: ubuntu-latest
 
-  #   strategy:
-  #     max-parallel: 5
-  #     fail-fast: false
-  #     matrix:
-  #       tag: ${{ fromJson(needs.tag-list.outputs.tags) }}
+    needs:
+      - tag-list
 
-  #   steps:
-  #     - name: Check out the repo
-  #       uses: actions/checkout@v4
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
 
-  #     - name: Log in to Docker Hub
-  #       uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
+    strategy:
+      max-parallel: 5
+      fail-fast: false
+      matrix: ${{fromJson(needs.tag-list.outputs.matrix)}}
 
-  #     - name: Extract metadata (tags, labels) for Docker
-  #       id: meta
-  #       uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-  #       with:
-  #         images: ghcr.io/totto2727-org/playwright-ja
-  #         tags:
-  #           - ${{ matrix.tag }}-amd64
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ghcr.io/totto2727-org/playwright-ja
+          tags: |
+            ${{ matrix.tag }}-amd64
 
   #     - name: Build and push Docker image
   #       id: push
