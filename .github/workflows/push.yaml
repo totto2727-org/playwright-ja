@@ -44,7 +44,7 @@ jobs:
       id-token: write
 
     strategy:
-      max-parallel: 10
+      max-parallel: 1
       fail-fast: false
       matrix: ${{fromJson(needs.tag-list.outputs.matrix)}}
 
