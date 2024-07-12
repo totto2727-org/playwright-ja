@@ -74,7 +74,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ghcr.io/totto2727-org/playwright-ja:${{ matrix.tag }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             TAG=${{ matrix.tag }}

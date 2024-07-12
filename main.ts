@@ -6,7 +6,7 @@ type McrDockerTagsResponse = {
     tags: string[];
 };
 
-type GhcrDockerTagsResponse = { metadata: { container: { tags: string[] } } }[];
+type GhcrDockerTagsResponse = { name: string, metadata: { container: { tags: string[] } } }[];
 
 const config = {
     GITHUB_TOKEN: Deno.env.get("GITHUB_TOKEN"),
@@ -35,7 +35,6 @@ async function main() {
         throw new Error("Failed to fetch tags from MCR");
     }
     const jsonSource: McrDockerTagsResponse = await responseSource.json();
-    console.log(jsonSource)
     const filteredVersion = pipe(
         jsonSource.tags,
         filter((v) => v.startsWith("v")),
@@ -43,6 +42,7 @@ async function main() {
         filter((v) => !v.includes("-alpha") && !v.includes("-beta")),
         filter((v) => v.includes(ARCHITECTURE)),
     );
+    filteredVersion.forEach(v => console.log("mcr", v))
 
     const responseTarget = await fetch(
         `https://api.github.com/orgs/${config.org}/packages/${config.packageType}/${config.packageName}/versions`,
@@ -59,10 +59,11 @@ async function main() {
         throw new Error("Failed to fetch tags from GHCR");
     }
     const jsonTarget: GhcrDockerTagsResponse = await responseTarget.json();
-    console.log(jsonTarget)
-    const setTarget = new Set(jsonTarget.flatMap((v) => v.metadata.container.tags));
+    const setTarget = new Set(jsonTarget.flatMap((v) => [v.name, ...v.metadata.container.tags]));
+    Array.from(setTarget.values()).forEach(v => console.log("ghcp", v))
 
     const requiredBuildTagList = { tag: filteredVersion.filter((v) => !setTarget.has(v)) };
+    requiredBuildTagList.tag.forEach(v => console.log("required", v))
 
     Deno.writeTextFileSync(
         GITHUB_OUTPUT,
