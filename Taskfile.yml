@@ -1,0 +1,17 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  login:
+    cmds:
+      - dotenvx run -f token -- sh -c 'echo ${TOKEN} | docker login ghcr.io -u totto2727 --password-stdin'
+
+  dev:
+    cmds:
+      - dotenvx run -f token -- deno run --allow-net --allow-write --allow-env main.ts
+
+  build-amd64:
+    cmds:
+      - docker build --platform linux/amd64 -t ghcr.io/totto2727-org/playwright-ja:${TAG}-amd64 .
+      - docker push ghcr.io/totto2727-org/playwright-ja:${TAG}-amd64
