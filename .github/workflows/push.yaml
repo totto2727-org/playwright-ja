@@ -76,6 +76,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+        env:
+          TAG: ${{ matrix.tag }}
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
