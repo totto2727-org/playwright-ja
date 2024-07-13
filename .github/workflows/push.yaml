@@ -1,9 +1,17 @@
-name: Push amd64 Docker image
+name: Push Docker image
 
 on:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
+
+env:
+  SOURCE_IMAGE_NAME: playwright
+  BUILD_IMAGE_NAME: ghcr.io/totto2727-org/playwright-ja
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   tag-list:
@@ -13,24 +21,17 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - uses: denoland/setup-deno@v1
+      - uses: ./.github/actions/fetch-tag-list-mcr
+        id: tag-list
         with:
-          deno-version: "1.44.4"
-
-      - name: List unpushed image tags
-        id: tags-list
-        run: deno run --allow-env --allow-write --allow-net main.ts
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ARCHITECTURE: "amd64"
-
-      - run: |
-          echo ${{ steps.tags-list.outputs.matrix }}
+          image-name: ${{ env.SOURCE_IMAGE_NAME }}
 
     outputs:
-      matrix: ${{ steps.tags-list.outputs.matrix }}
+      arm64: ${{ steps.tag-list.outputs.arm64 }}
+      amd64: ${{ steps.tag-list.outputs.amd64 }}
+      multi: ${{ steps.tag-list.outputs.multi }}
 
-  push:
+  push-multi:
     name: Push Docker image to GHCR
     runs-on: ubuntu-latest
 
@@ -39,49 +40,27 @@ jobs:
 
     permissions:
       packages: write
-      contents: read
       attestations: write
       id-token: write
+      contents: read
 
     strategy:
       max-parallel: 1
       fail-fast: false
-      matrix: ${{fromJson(needs.tag-list.outputs.matrix)}}
+      matrix:
+        tag: ${{fromJson(needs.tag-list.outputs.multi)}}
 
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Push image to GHCR
+        uses: ./.github/actions/push-image-ghcr
         with:
-          registry: ghcr.io
+          image: ${{ env.BUILD_IMAGE_NAME }}
+          tag: ${{ matrix.tag }}
+          platform: linux/amd64,linux/arm64
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/totto2727-org/playwright-ja
-          tags: |
-            ${{ matrix.tag }}
-
-      - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ghcr.io/totto2727-org/playwright-ja:${{ matrix.tag }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            TAG=${{ matrix.tag }}
-
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-name: ghcr.io/totto2727-org/playwright-ja
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
