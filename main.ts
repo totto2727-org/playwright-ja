@@ -1,5 +1,5 @@
-import { filter, last, map, pipe, reverse, sort, splitAt } from "npm:remeda";
-import * as semver from "jsr:@std/semver";
+import { filter, map, pipe, reverse, sort } from "npm:remeda@2.14.0";
+import * as semver from "jsr:@std/semver@1.0.3";
 
 type McrDockerTagsResponse = {
   name: string;
@@ -8,7 +8,6 @@ type McrDockerTagsResponse = {
 
 const config = {
   GITHUB_OUTPUT: Deno.env.get("GITHUB_OUTPUT"),
-  LIMIT: Number.parseInt(Deno.env.get("LIMIT") ?? "") || 10,
   IMAGE_NAME: Deno.env.get("IMAGE_NAME"),
 };
 
@@ -18,7 +17,6 @@ if (!config.GITHUB_OUTPUT || !config.IMAGE_NAME) {
 
 const GITHUB_OUTPUT = config.GITHUB_OUTPUT;
 const IMAGE_NAME = config.IMAGE_NAME;
-const LIMIT = config.LIMIT;
 
 function generateMcrUrl(imageName: string) {
   return `https://mcr.microsoft.com/v2/${imageName}/tags/list`;
@@ -74,39 +72,43 @@ async function main() {
     new Request(generateMcrUrl(IMAGE_NAME)),
   );
 
-  const minSemver = pipe(
-    buildTargetResponse.tags,
-    filter(semver.canParse), // semverとしてパース可能なもののみ
-    map(semver.parse), // 元の文字列とsemverのタプルに変換
-    map((s) => `${s.major}.${s.minor}.${s.patch}`), // プリミティブなバージョンのみの文字列に変換
-    (v) => Array.from(new Set(v)), // 重複を削除
-    map(semver.parse), // 元の文字列とsemverのタプルに変換
-    sort((s1, s2) => semver.compare(s1, s2)), // ソート
-    reverse(), // 降順にする
-    (v) => last(splitAt(v, LIMIT)[0]), // 最初のLIMIT個までの最後の要素を取り出す
-  );
-
-  if (!minSemver) {
-    throw new Error("No valid semver found");
-  }
-
-  console.log("minSemver", minSemver);
-
   const targetBasicTagList = pipe(
     buildTargetResponse.tags,
     filter((tag) => tag.startsWith("v")), // vから始まるタグのみ
     filter(isBasicTag), // 基本的なタグのみ
     filter(semver.canParse), // semverとしてパース可能なもののみ
     map((v) => [v, semver.parse(v)] as const), // 元の文字列とsemverのタプルに変換
-    filter(([_v, s]) => semver.greaterOrEqual(s, minSemver)), // 最低バージョン以上
     sort(([_v1, s1], [_v2, s2]) => semver.compare(s1, s2)), // ソート
     reverse(), // 降順にする
     map(([v]) => v), // タプルの文字列を取り出す
   );
 
+  let preResult: {
+    arm64: string[];
+    amd64: string[];
+    multi: string[];
+  };
+
+  try {
+    preResult = JSON.parse(Deno.readTextFileSync("pre-result.json"));
+  } catch (e) {
+    preResult = {
+      arm64: [],
+      amd64: [],
+      multi: [],
+    };
+  }
+
+  const preResultSet = {
+    arm64: new Set(preResult.arm64),
+    amd64: new Set(preResult.amd64),
+    multi: new Set(preResult.multi),
+  };
+
   const targetArm64 = pipe(
     targetBasicTagList,
     filter(isArchitectureArm64),
+    filter((v) => !preResultSet.arm64.has(v)),
   );
   const targetArm64Set = new Set(targetArm64);
   console.log("targetArm64", targetArm64.length, targetArm64);
@@ -114,6 +116,7 @@ async function main() {
   const targetAmd64 = pipe(
     targetBasicTagList,
     filter(isArchitectureAmd64),
+    filter((v) => !preResultSet.amd64.has(v)),
   );
   const targetAmd64Set = new Set(targetAmd64);
   console.log("targetAmd64", targetAmd64.length, targetAmd64);
@@ -121,6 +124,7 @@ async function main() {
   const targetMulti = pipe(
     targetBasicTagList,
     filter((v) => isArchitectureMulti(targetAmd64Set, targetArm64Set, v)),
+    filter((v) => !preResultSet.multi.has(v)),
   );
   console.log("targetMulti", targetMulti.length, targetMulti);
 
@@ -132,6 +136,19 @@ multi=${JSON.stringify(targetMulti)}
 `.trimStart();
 
   console.log(output);
+
+  Deno.writeTextFileSync(
+    "pre-result.json",
+    JSON.stringify(
+      {
+        arm64: [...preResult.arm64, ...targetArm64],
+        amd64: [...preResult.amd64, ...targetAmd64],
+        multi: [...preResult.multi, ...targetMulti],
+      },
+      null,
+      2,
+    ),
+  );
 
   Deno.writeTextFileSync(
     GITHUB_OUTPUT,

@@ -1,3 +1,6 @@
 {
-  "exclude": [".history"]
+  "exclude": [
+    ".history"
+  ],
+  "lock": false
 }

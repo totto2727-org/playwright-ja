@@ -15,8 +15,10 @@ concurrency:
 
 jobs:
   tag-list:
-    name: Get tag list
+    name: Fetch tag list
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -25,6 +27,11 @@ jobs:
         id: tag-list
         with:
           image-name: ${{ env.SOURCE_IMAGE_NAME }}
+
+      - name: Commit & Push changes
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
     outputs:
       arm64: ${{ steps.tag-list.outputs.arm64 }}
