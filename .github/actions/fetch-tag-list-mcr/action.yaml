@@ -27,7 +27,7 @@ runs:
     - name: List unpushed image tags
       id: tag-list
       shell: bash
-      run: deno run --allow-env --allow-write --allow-net main.ts
+      run: deno run --allow-env --allow-write --allow-net --allow-read main.ts
       env:
         IMAGE_NAME: ${{ inputs.image-name }}
 

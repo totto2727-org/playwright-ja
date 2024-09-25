@@ -1,5 +1,6 @@
 import { filter, map, pipe, reverse, sort } from "npm:remeda@2.14.0";
 import * as semver from "jsr:@std/semver@1.0.3";
+import * as path from "jsr:@std/path@1.0.3";
 
 type McrDockerTagsResponse = {
   name: string;
@@ -66,6 +67,8 @@ function isArchitectureMulti(
     amd64.has(addAmd64TagSuffix(tag)) && arm64.has(addArm64TagSuffix(tag));
 }
 
+const preResultPath = path.join(import.meta.dirname ?? ".", "pre-result.json");
+
 async function main() {
   const buildTargetResponse = await fetchMcr(
     fetch,
@@ -90,7 +93,9 @@ async function main() {
   };
 
   try {
-    preResult = JSON.parse(Deno.readTextFileSync("pre-result.json"));
+    preResult = JSON.parse(
+      Deno.readTextFileSync(preResultPath),
+    );
   } catch (e) {
     preResult = {
       arm64: [],
@@ -138,7 +143,7 @@ multi=${JSON.stringify(targetMulti)}
   console.log(output);
 
   Deno.writeTextFileSync(
-    "pre-result.json",
+    preResultPath,
     JSON.stringify(
       {
         arm64: [...preResult.arm64, ...targetArm64],
