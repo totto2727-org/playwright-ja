@@ -278,7 +278,11 @@
     "v1.48.1-noble-arm64",
     "v1.48.1-jammy-arm64",
     "v1.48.1-focal-arm64",
-    "v1.48.1-arm64"
+    "v1.48.1-arm64",
+    "v1.48.2-noble-arm64",
+    "v1.48.2-jammy-arm64",
+    "v1.48.2-focal-arm64",
+    "v1.48.2-arm64"
   ],
   "amd64": [
     "v1.47.1-noble-amd64",
@@ -608,7 +612,11 @@
     "v1.48.1-noble-amd64",
     "v1.48.1-jammy-amd64",
     "v1.48.1-focal-amd64",
-    "v1.48.1-amd64"
+    "v1.48.1-amd64",
+    "v1.48.2-noble-amd64",
+    "v1.48.2-jammy-amd64",
+    "v1.48.2-focal-amd64",
+    "v1.48.2-amd64"
   ],
   "multi": [
     "v1.47.1",
@@ -888,6 +896,10 @@
     "v1.48.1",
     "v1.48.1-noble",
     "v1.48.1-jammy",
-    "v1.48.1-focal"
+    "v1.48.1-focal",
+    "v1.48.2",
+    "v1.48.2-noble",
+    "v1.48.2-jammy",
+    "v1.48.2-focal"
   ]
 }
