@@ -358,7 +358,11 @@
     "v1.61.0-resolute-arm64",
     "v1.61.0-noble-arm64",
     "v1.61.0-jammy-arm64",
-    "v1.61.0-arm64"
+    "v1.61.0-arm64",
+    "v1.61.1-resolute-arm64",
+    "v1.61.1-noble-arm64",
+    "v1.61.1-jammy-arm64",
+    "v1.61.1-arm64"
   ],
   "amd64": [
     "v1.47.1-noble-amd64",
@@ -768,7 +772,11 @@
     "v1.61.0-resolute-amd64",
     "v1.61.0-noble-amd64",
     "v1.61.0-jammy-amd64",
-    "v1.61.0-amd64"
+    "v1.61.0-amd64",
+    "v1.61.1-resolute-amd64",
+    "v1.61.1-noble-amd64",
+    "v1.61.1-jammy-amd64",
+    "v1.61.1-amd64"
   ],
   "multi": [
     "v1.47.1",
@@ -1128,6 +1136,10 @@
     "v1.61.0",
     "v1.61.0-resolute",
     "v1.61.0-noble",
-    "v1.61.0-jammy"
+    "v1.61.0-jammy",
+    "v1.61.1",
+    "v1.61.1-resolute",
+    "v1.61.1-noble",
+    "v1.61.1-jammy"
   ]
 }
