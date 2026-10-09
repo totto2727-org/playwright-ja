@@ -804,7 +804,11 @@
     "v1.63.0-resolute-amd64",
     "v1.63.0-noble-amd64",
     "v1.63.0-jammy-amd64",
-    "v1.63.0-amd64"
+    "v1.63.0-amd64",
+    "v1.64.0-resolute-amd64",
+    "v1.64.0-noble-amd64",
+    "v1.64.0-jammy-amd64",
+    "v1.64.0-amd64"
   ],
   "multi": [
     "v1.47.1",
