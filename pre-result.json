@@ -385,7 +385,11 @@
     "v1.64.1-arm64",
     "v1.64.1-canary-20261031224334-resolute-arm64",
     "v1.64.1-canary-20261031224334-noble-arm64",
-    "v1.64.1-canary-20261031224334-jammy-arm64"
+    "v1.64.1-canary-20261031224334-jammy-arm64",
+    "v1.65.0-resolute-arm64",
+    "v1.65.0-noble-arm64",
+    "v1.65.0-jammy-arm64",
+    "v1.65.0-arm64"
   ],
   "amd64": [
     "v1.47.1-noble-amd64",
@@ -822,7 +826,11 @@
     "v1.64.1-amd64",
     "v1.64.1-canary-20261031224334-resolute-amd64",
     "v1.64.1-canary-20261031224334-noble-amd64",
-    "v1.64.1-canary-20261031224334-jammy-amd64"
+    "v1.64.1-canary-20261031224334-jammy-amd64",
+    "v1.65.0-resolute-amd64",
+    "v1.65.0-noble-amd64",
+    "v1.65.0-jammy-amd64",
+    "v1.65.0-amd64"
   ],
   "multi": [
     "v1.47.1",
@@ -1205,6 +1213,10 @@
     "v1.64.1-jammy",
     "v1.64.1-canary-20261031224334-resolute",
     "v1.64.1-canary-20261031224334-noble",
-    "v1.64.1-canary-20261031224334-jammy"
+    "v1.64.1-canary-20261031224334-jammy",
+    "v1.65.0",
+    "v1.65.0-resolute",
+    "v1.65.0-noble",
+    "v1.65.0-jammy"
   ]
 }
